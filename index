@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Produção</title>
+    <style>
+        /* CSS para um visual prático em celular */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 450px; /* Limita a largura para simular um celular */
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 0; /* Remove margem inferior para aproximar dos créditos */
+        }
+        
+        /* Estilos para os Créditos */
+        .creditos {
+            text-align: center;
+            font-size: 0.8em; /* 80% do tamanho normal da fonte */
+            color: #6c757d; /* Cor cinza discreta */
+            margin-top: 5px; 
+            margin-bottom: 25px; 
+        }
+        .creditos a {
+            color: #6c757d; 
+            text-decoration: none; 
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], #hectareDisplay {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; 
+        }
+        #hectareDisplay {
+            background-color: #e9ecef;
+            font-weight: bold;
+            color: #28a745;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        #addButton {
+            background-color: #28a745;
+            color: white;
+        }
+        #whatsappButton {
+            background-color: #25d366;
+            color: white;
+            margin-top: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            width: auto;
+        }
+        .total-hectare {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌱 Calculadora de Produção</h1>
+    <p class="creditos">
+        Calculadora elaborada por João Batista - 
+        <a href="mailto:jbatist7@gmail.com">jbatist7@gmail.com</a>
+    </p>
+
+    <div class="input-group">
+        <label for="produto">1. Produto (Nome):</label>
+        <input type="text" id="produto" placeholder="p.ex.: Couve">
+    </div>
+
+    <div class="input-group">
+        <label for="largura">2. Largura (m):</label>
+        <input type="number" step="0.01" id="largura" placeholder="0,00" oninput="calcularHectare()">
+    </div>
+
+    <div class="input-group">
+        <label for="comprimento">3. Comprimento (m):</label>
+        <input type="number" step="0.01" id="comprimento" placeholder="0,00" oninput="calcularHectare()">
+    </div>
+
+    <div class="input-group">
+        <label>4. Tamanho em Hectare (ha - Automático):</label>
+        <div id="hectareDisplay">0.0000</div>
+    </div>
+
+    <button id="addButton" onclick="adicionarProduto()">➕ Adicionar</button>
+
+    <hr>
+
+    <h2>📋 Lista de Produção</h2>
+    <table id="tabelaProducao">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Hectare (ha)</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <div class="total-hectare">
+        Total em Hectare: <span id="totalHectare">0.0000</span> ha
+    </div>
+
+    <button id="whatsappButton" onclick="enviarWhatsApp()">📲 Enviar para o WhatsApp</button>
+
+</div>
+
+<script>
+    // 1 hectare = 10.000 metros quadrados
+    const METROS_POR_HECTARE = 10000;
+
+    /**
+     * Calcula a área em m² e converte para hectare (ha).
+     * Preenche o campo de exibição automático.
+     */
+    function calcularHectare() {
+        // Pega os valores e garante que a vírgula (,) seja tratada como ponto (.)
+        // Se o campo estiver vazio, retorna 0, o que é o comportamento esperado agora que o campo inicial está vazio.
+        const larguraStr = document.getElementById('largura').value.replace(',', '.');
+        const comprimentoStr = document.getElementById('comprimento').value.replace(',', '.');
+
+        // Converte para número. Se o valor for inválido ou vazio, usa 0.
+        const largura = Number(larguraStr) || 0;
+        const comprimento = Number(comprimentoStr) || 0;
+
+        const areaM2 = largura * comprimento;
+        const areaHa = areaM2 / METROS_POR_HECTARE;
+
+        // Exibe o resultado formatado com 4 casas decimais
+        document.getElementById('hectareDisplay').textContent = areaHa.toFixed(4);
+        return areaHa;
+    }
+
+    /**
+     * Adiciona o produto atual à tabela e recalcula o total.
+     */
+    function adicionarProduto() {
+        const produto = document.getElementById('produto').value.trim();
+        const hectare = calcularHectare(); 
+
+        if (!produto) {
+            alert('Por favor, preencha o nome do Produto.');
+            return;
+        }
+        if (hectare <= 0) {
+            alert('Largura e Comprimento devem ser maiores que zero. Verifique se os campos estão preenchidos.');
+            return;
+        }
+
+        const tabelaBody = document.querySelector('#tabelaProducao tbody');
+        const newRow = tabelaBody.insertRow();
+        // Armazena o valor bruto de hectare para cálculo preciso
+        newRow.dataset.hectare = hectare; 
+
+        // Coluna 1: Produto
+        newRow.insertCell(0).textContent = produto;
+        
+        // Coluna 2: Hectare (formatado)
+        newRow.insertCell(1).textContent = hectare.toFixed(4);
+        
+        // Coluna 3: Botão Remover
+        const cellAcao = newRow.insertCell(2);
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = 'Remover';
+        // Chama a função removerProduto passando a linha para remoção
+        removeBtn.onclick = function() { removerProduto(newRow); };
+        cellAcao.appendChild(removeBtn);
+
+        // Limpa os campos de entrada após adicionar (deixa eles vazios)
+        document.getElementById('produto').value = '';
+        document.getElementById('largura').value = ''; // Limpa o valor (campo vazio)
+        document.getElementById('comprimento').value = ''; // Limpa o valor (campo vazio)
+        calcularHectare(); // Zera o display de hectare
+        
+        // Atualiza o total
+        atualizarTotalHectare();
+    }
+
+    /**
+     * Remove uma linha da tabela e recalcula o total.
+     */
+    function removerProduto(row) {
+        row.remove();
+        atualizarTotalHectare();
+    }
+
+    /**
+     * Soma todos os valores de hectare na tabela e atualiza o display de total.
+     */
+    function atualizarTotalHectare() {
+        const linhas = document.querySelectorAll('#tabelaProducao tbody tr');
+        let total = 0;
+
+        linhas.forEach(row => {
+            // Pega o valor de hectare armazenado no data-attribute
+            total += Number(row.dataset.hectare);
+        });
+
+        document.getElementById('totalHectare').textContent = total.toFixed(4);
+    }
+
+    /**
+     * Cria a mensagem formatada com os dados da tabela e abre o link do WhatsApp.
+     */
+    function enviarWhatsApp() {
+        const total = document.getElementById('totalHectare').textContent;
+        const linhas = document.querySelectorAll('#tabelaProducao tbody tr');
+        
+        if (linhas.length === 0) {
+            alert('A tabela de produção está vazia. Adicione produtos antes de enviar.');
+            return;
+        }
+
+        let mensagem = `*📋 Resumo da Produção:*\n\n`;
+        
+        linhas.forEach((row, index) => {
+            const produto = row.cells[0].textContent;
+            const hectare = row.cells[1].textContent;
+            // Cria uma linha para cada produto na mensagem
+            mensagem += `${index + 1}. *Prod.:* ${produto} | *Área:* ${hectare} ha\n`;
+        });
+
+        mensagem += `\n*TOTAL GERAL:* ${total} ha`;
+
+        // Codifica a mensagem para que possa ser usada em uma URL
+        const urlMensagem = encodeURIComponent(mensagem);
+
+        // Abre o link do WhatsApp (será aberto no app em celular)
+        const whatsappLink = `https://wa.me/?text=${urlMensagem}`;
+        
+        window.open(whatsappLink, '_blank');
+    }
+
+    // A função calcularHectare() não precisa ser chamada no onload, pois agora os campos iniciam vazios.
+    // O valor do hectareDisplay será 0.0000 (do HTML) e será calculado ao primeiro input.
+    // Se fosse necessário iniciar com 0.0000, o JS faria: document.getElementById('hectareDisplay').textContent = "0.0000";
+</script>
+</body>
+</html>
